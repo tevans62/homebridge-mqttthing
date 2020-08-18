@@ -2993,13 +2993,29 @@ function makeThing( log, accessoryConfig ) {
     return thing;
 }
 
-// Homebridge Entry point
-module.exports = function( homebridge ) {
+function init_globals(homebridge)
+{
     Service = homebridge.hap.Service;
     Characteristic = homebridge.hap.Characteristic;
     Eve = new homebridgeLib.EveHomeKitTypes( homebridge );
     HistoryService = fakegatoHistory( homebridge );
     homebridgePath = homebridge.user.storagePath();
+}
 
+// Homebridge Entry point
+module.exports = function( param ) {
+    var homebridge;
+
+    // mqtt_maker is a callback used to create a proxy/wrapper for a nicely created mqttthing HomeKit descriptor.
+    // hbridge is the homebridge object from that wrapper instance.
+    if ('mqtt_maker' in  param) {
+        console.log("MQTT-THING alternate calling style.");
+        homebridge = param.hbridge;
+        init_globals(homebridge);
+        return param.mqtt_maker(makeThing);
+    }
+
+    homebridge = param;
+    init_globals(homebridge);
     homebridge.registerAccessory( "homebridge-mqttthing", "mqttthing", makeThing );
 }
